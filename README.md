@@ -28,4 +28,4 @@ Aplikacja udostępnia:
 
 Poniżej znajduje się zrzut ekranu działającej aplikacji wdrożonej na AWS ECS.
 
-![Podgląd aplikacji Boston House Price Prediction](https://serwer2533206.home.pl/aws_app.png)
+![Podgląd aplikacji Boston House Price Prediction](https://serwer2533206.home.pl/aws_app_picture.png)
