@@ -1,4 +1,261 @@
-<h1>House Price Prediction</h1>
-<p>This project is a machine learning model that predicts house prices based on various features such as location, size, number of bedrooms, and more. The model is trained on a dataset of historical house prices and can be used to estimate the value of a property given its characteristics.</p>
-<p>The project is implemented using Python and Flask for the web application, and scikit-learn for the machine learning model. The model is trained using a dataset of house prices and their corresponding features, and then saved as a pickle file for later use in the web application.</p>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boston House Price Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 32px 32px 20px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #f8fafc;
+    }
+
+    .header p {
+      color: #cbd5e1;
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 800px;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(30, 41, 59, 0.8);
+      color: #f8fafc;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .field input::placeholder {
+      color: #94a3b8;
+    }
+
+    .field input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
+    }
+
+    .submit-wrap {
+      margin-top: 8px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .result {
+      margin-top: 26px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: rgba(15, 118, 110, 0.18);
+      border: 1px solid rgba(45, 212, 191, 0.28);
+      color: #ccfbf1;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .header,
+      .content {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Boston House Price Prediction</h1>
+      <p>
+        Wprowadź 13 cech wejściowych, a aplikacja wyśle dane do modelu uczenia maszynowego
+        i zwróci przewidywaną wartość domu.
+      </p>
+    </div>
+
+    <div class="content">
+      <form action="{{ url_for('predict_from_values') }}" method="post">
+        <div class="grid">
+          <div class="field">
+            <label for="CRIM">CRIM</label>
+            <input type="number" step="any" id="CRIM" name="CRIM" placeholder="np. 0.00632" required>
+          </div>
+
+          <div class="field">
+            <label for="ZN">ZN</label>
+            <input type="number" step="any" id="ZN" name="ZN" placeholder="np. 18.0" required>
+          </div>
+
+          <div class="field">
+            <label for="INDUS">INDUS</label>
+            <input type="number" step="any" id="INDUS" name="INDUS" placeholder="np. 2.31" required>
+          </div>
+
+          <div class="field">
+            <label for="CHAS">CHAS</label>
+            <input type="number" step="any" id="CHAS" name="CHAS" placeholder="0 lub 1" required>
+          </div>
+
+          <div class="field">
+            <label for="NOX">NOX</label>
+            <input type="number" step="any" id="NOX" name="NOX" placeholder="np. 0.538" required>
+          </div>
+
+          <div class="field">
+            <label for="RM">RM</label>
+            <input type="number" step="any" id="RM" name="RM" placeholder="np. 6.575" required>
+          </div>
+
+          <div class="field">
+            <label for="AGE">AGE</label>
+            <input type="number" step="any" id="AGE" name="AGE" placeholder="np. 65.2" required>
+          </div>
+
+          <div class="field">
+            <label for="DIS">DIS</label>
+            <input type="number" step="any" id="DIS" name="DIS" placeholder="np. 4.09" required>
+          </div>
+
+          <div class="field">
+            <label for="RAD">RAD</label>
+            <input type="number" step="any" id="RAD" name="RAD" placeholder="np. 1.0" required>
+          </div>
+
+          <div class="field">
+            <label for="TAX">TAX</label>
+            <input type="number" step="any" id="TAX" name="TAX" placeholder="np. 296.0" required>
+          </div>
+
+          <div class="field">
+            <label for="PTRATIO">PTRATIO</label>
+            <input type="number" step="any" id="PTRATIO" name="PTRATIO" placeholder="np. 15.3" required>
+          </div>
+
+          <div class="field">
+            <label for="B">B</label>
+            <input type="number" step="any" id="B" name="B" placeholder="np. 396.9" required>
+          </div>
+
+          <div class="field">
+            <label for="LSTAT">LSTAT</label>
+            <input type="number" step="any" id="LSTAT" name="LSTAT" placeholder="np. 4.98" required>
+          </div>
+        </div>
+
+        <div class="submit-wrap">
+          <button type="submit">Predict Price</button>
+        </div>
+
+        <div class="hint">
+          Uwaga: nazwy pól muszą odpowiadać cechom modelu.
+        </div>
+      </form>
+
+      {% if prediction_text %}
+      <div class="result">
+        {{ prediction_text }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
